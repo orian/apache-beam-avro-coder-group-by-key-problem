@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class TestSdtDevTransform {
     private static final ArrayList<String> WORDS = Lists.newArrayList("raz", "dwa");
@@ -57,9 +58,25 @@ public class TestSdtDevTransform {
             key.part0 = p;
             return key;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Key key = (Key) o;
+            return Objects.equals(part0, key.part0);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(part0);
+        }
     }
 
-    @Ignore
     @Test
     @Category(ValidatesRunner.class)
     public void StdDevAvro() throws Exception {
