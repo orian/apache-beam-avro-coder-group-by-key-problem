@@ -1,0 +1,8 @@
+{
+  "name": "KeyAvro",
+  "namespace": "com.datainq.playground",
+  "type": "record",
+  "fields": [
+    {"name": "prop0", "type": "string"}
+  ]
+}

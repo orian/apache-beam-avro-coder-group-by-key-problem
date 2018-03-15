@@ -11,11 +11,13 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TimestampedValue;
 import org.joda.time.Instant;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class TestSdtDevTransform {
     private static final ArrayList<String> WORDS = Lists.newArrayList("raz", "dwa");
@@ -56,6 +58,23 @@ public class TestSdtDevTransform {
             key.part0 = p;
             return key;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            Key key = (Key) o;
+            return Objects.equals(part0, key.part0);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(part0);
+        }
     }
 
     @Test
@@ -81,6 +100,20 @@ public class TestSdtDevTransform {
         PCollection<KV<KeyOuterClass.Key, Double>> input = pipeline.apply("Create", Create.of(itms));
         PAssert.that(input.apply("StdDev", new StdDevTransform<>())).containsInAnyOrder(
                 KV.of(KeyOuterClass.Key.newBuilder().setProp0("Olsztyn").build(), 1.4142135623730951));
+        pipeline.run().waitUntilFinish();
+    }
+
+    @Test
+    @Category(ValidatesRunner.class)
+    public void StdDevAvro2() throws Exception {
+        pipeline.getCoderRegistry().registerCoderForClass(KeyAvro.class, AvroCoder.of(KeyAvro.class));
+        ArrayList<KV<KeyAvro, Double>> itms = Lists.newArrayList(
+            KV.of(KeyAvro.newBuilder().setProp0("Olsztyn").build(), 4.),
+            KV.of(KeyAvro.newBuilder().setProp0("Olsztyn").build(), 6.));
+
+        PCollection<KV<KeyAvro, Double>> input = pipeline.apply("Create", Create.of(itms));
+        PAssert.that(input.apply("StdDev", new StdDevTransform<>())).containsInAnyOrder(
+            KV.of(KeyAvro.newBuilder().setProp0("Olsztyn").build(), 1.4142135623730951));
         pipeline.run().waitUntilFinish();
     }
 
