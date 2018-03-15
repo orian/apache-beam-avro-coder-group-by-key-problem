@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package com.datainq.playground;
+
+option java_package = "com.datainq.playground";
+//option java_outer_classname = "KeyH";
+
+message Key {
+    string prop0 = 1;
+}
