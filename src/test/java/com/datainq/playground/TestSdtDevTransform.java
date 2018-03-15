@@ -11,6 +11,7 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TimestampedValue;
 import org.joda.time.Instant;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -58,6 +59,7 @@ public class TestSdtDevTransform {
         }
     }
 
+    @Ignore
     @Test
     @Category(ValidatesRunner.class)
     public void StdDevAvro() throws Exception {
@@ -81,6 +83,20 @@ public class TestSdtDevTransform {
         PCollection<KV<KeyOuterClass.Key, Double>> input = pipeline.apply("Create", Create.of(itms));
         PAssert.that(input.apply("StdDev", new StdDevTransform<>())).containsInAnyOrder(
                 KV.of(KeyOuterClass.Key.newBuilder().setProp0("Olsztyn").build(), 1.4142135623730951));
+        pipeline.run().waitUntilFinish();
+    }
+
+    @Test
+    @Category(ValidatesRunner.class)
+    public void StdDevAvro2() throws Exception {
+        pipeline.getCoderRegistry().registerCoderForClass(KeyAvro.class, AvroCoder.of(KeyAvro.class));
+        ArrayList<KV<KeyAvro, Double>> itms = Lists.newArrayList(
+            KV.of(KeyAvro.newBuilder().setProp0("Olsztyn").build(), 4.),
+            KV.of(KeyAvro.newBuilder().setProp0("Olsztyn").build(), 6.));
+
+        PCollection<KV<KeyAvro, Double>> input = pipeline.apply("Create", Create.of(itms));
+        PAssert.that(input.apply("StdDev", new StdDevTransform<>())).containsInAnyOrder(
+            KV.of(KeyAvro.newBuilder().setProp0("Olsztyn").build(), 1.4142135623730951));
         pipeline.run().waitUntilFinish();
     }
 
